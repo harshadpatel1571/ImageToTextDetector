@@ -1,0 +1,47 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="card">
+    <div class="card-body">
+        <input type="file" id="imageInput" accept="image/*">
+        <button onclick="performOCR()">Perform OCR</button>
+        <div id="result" style="background-color: gainsboro;"></div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/4.1.1/tesseract.min.js"></script>
+    <script>
+        async function performOCR() {
+            const imageInput = document.getElementById('imageInput');
+
+            const file = imageInput.files[0];
+            if (!file) {
+                alert('Please select an image file.');
+                return;
+            }
+
+            const { data: { text } } = await Tesseract.recognize(file, 'eng');
+
+            var dto = {
+                Text: text,
+            };
+
+            $.ajax({
+                url: '/Home/Analise',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(dto),
+                success: function (result) {
+                    if (result.status) {
+                        $("#result").html(result.data);
+                    }
+                },
+                error: function (error) {
+                    console.error(error);
+                }
+            });
+        }
+    </script>
+}   
